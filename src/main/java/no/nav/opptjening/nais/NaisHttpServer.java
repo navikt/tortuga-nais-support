@@ -53,16 +53,7 @@ public class NaisHttpServer implements Runnable {
             server.setStopAtShutdown(true);
         } catch (Exception e) {
             LOG.error("Unable to start http server", e);
-            return;
         }
-
-        try {
-            server.getThreadPool().join();
-        } catch (InterruptedException e) {
-            LOG.debug("Thread got interrupted, exiting");
-        }
-
-        LOG.info("Http server stopped");
     }
 
     static class LivenessEndpoint extends HttpServlet {
