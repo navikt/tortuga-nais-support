@@ -5,7 +5,7 @@
 
     <groupId>no.nav.opptjening</groupId>
     <artifactId>nais-support</artifactId>
-    <version>3</version>
+    <version>4</version>
     <packaging>jar</packaging>
 
     <name>tortuga-nais-support</name>
