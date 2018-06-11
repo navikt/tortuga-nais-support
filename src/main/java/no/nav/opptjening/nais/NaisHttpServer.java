@@ -3,9 +3,12 @@ package no.nav.opptjening.nais;
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.exporter.MetricsServlet;
 import io.prometheus.client.hotspot.DefaultExports;
+import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,7 +35,7 @@ public class NaisHttpServer implements Runnable {
     public NaisHttpServer(int port, CollectorRegistry registry) {
         this.port = port;
         this.registry = registry;
-        this.server = new Server(port);
+        this.server = createServer(port);
 
         ServletHandler handler = new ServletHandler();
         server.setHandler(handler);
@@ -42,6 +45,16 @@ public class NaisHttpServer implements Runnable {
 
         HttpServlet metricsServlet = new MetricsServlet(this.registry);
         handler.addServletWithMapping(new ServletHolder(metricsServlet), "/metrics");
+    }
+
+    private static Server createServer(int port) {
+        Server server = new Server(new QueuedThreadPool(5, 1));
+
+        ServerConnector connector = new ServerConnector(server);
+        connector.setPort(port);
+        server.setConnectors(new Connector[]{connector});
+
+        return server;
     }
 
     public void run() {
