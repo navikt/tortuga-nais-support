@@ -18,7 +18,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-public class NaisHttpServer implements Runnable {
+public class NaisHttpServer {
     public static final int DEFAULT_PORT = 8080;
 
     private static final Logger LOG = LoggerFactory.getLogger(NaisHttpServer.class);
@@ -57,16 +57,16 @@ public class NaisHttpServer implements Runnable {
         return server;
     }
 
-    public void run() {
+    public void start() throws Exception {
         DefaultExports.initialize();
 
-        try {
-            LOG.info("Starting http server on port " + port);
-            server.start();
-            server.setStopAtShutdown(true);
-        } catch (Exception e) {
-            LOG.error("Unable to start http server", e);
-        }
+        LOG.info("Starting http server on port " + port);
+        server.start();
+        server.setStopAtShutdown(true);
+    }
+
+    public void stop() throws Exception {
+        server.stop();
     }
 
     static class LivenessEndpoint extends HttpServlet {
