@@ -3,6 +3,7 @@ package no.nav.opptjening.nais;
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.exporter.MetricsServlet;
 import io.prometheus.client.hotspot.DefaultExports;
+import io.prometheus.jmx.JmxCollector;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
@@ -16,7 +17,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
+import java.io.*;
+import java.util.stream.Collectors;
 
 public class NaisHttpServer {
     public static final int DEFAULT_PORT = 8080;
@@ -57,7 +59,25 @@ public class NaisHttpServer {
         return server;
     }
 
+    private static String resourceToFile(String path) throws FileNotFoundException, IOException {
+        if (path == null) {
+            return null;
+        }
+
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        InputStream resource = classLoader.getResourceAsStream(path);
+
+        if (resource == null) {
+            throw new FileNotFoundException("Resource " + path + " can not be found, or insufficient privileges");
+        }
+
+        return new BufferedReader(new InputStreamReader(resource))
+                .lines()
+                .collect(Collectors.joining("\n"));
+    }
+
     public void start() throws Exception {
+        new JmxCollector(resourceToFile("kafka.yml")).register();
         DefaultExports.initialize();
 
         LOG.info("Starting http server on port " + port);
