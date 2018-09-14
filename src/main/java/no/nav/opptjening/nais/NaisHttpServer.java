@@ -18,6 +18,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
+import java.util.function.BooleanSupplier;
 import java.util.stream.Collectors;
 
 public class NaisHttpServer {
@@ -34,7 +35,16 @@ public class NaisHttpServer {
         this(DEFAULT_PORT, CollectorRegistry.defaultRegistry);
     }
 
+    public NaisHttpServer(BooleanSupplier isAliveSupplier, BooleanSupplier isReadySupplier) {
+        this(isAliveSupplier, isReadySupplier, DEFAULT_PORT, CollectorRegistry.defaultRegistry);
+    }
+
+
     public NaisHttpServer(int port, CollectorRegistry registry) {
+        this(()->true, ()->true, port, registry);
+    }
+
+    public NaisHttpServer(BooleanSupplier isAliveSupplier, BooleanSupplier isReadySupplier, int port, CollectorRegistry registry) {
         this.port = port;
         this.registry = registry;
         this.server = createServer(port);
@@ -42,8 +52,8 @@ public class NaisHttpServer {
         ServletHandler handler = new ServletHandler();
         server.setHandler(handler);
 
-        handler.addServletWithMapping(new ServletHolder(new LivenessEndpoint()), "/isAlive");
-        handler.addServletWithMapping(new ServletHolder(new ReadynessEndpoint()), "/isReady");
+        handler.addServletWithMapping(new ServletHolder(new LivenessEndpoint(isAliveSupplier)), "/isAlive");
+        handler.addServletWithMapping(new ServletHolder(new ReadynessEndpoint(isReadySupplier)), "/isReady");
 
         HttpServlet metricsServlet = new MetricsServlet(this.registry);
         handler.addServletWithMapping(new ServletHolder(metricsServlet), "/metrics");
@@ -90,24 +100,50 @@ public class NaisHttpServer {
     }
 
     static class LivenessEndpoint extends HttpServlet {
+
+        private BooleanSupplier isAliveSupplier;
+
+        LivenessEndpoint(BooleanSupplier isAliveSupplier) {
+            this.isAliveSupplier = isAliveSupplier;
+        }
+
         @Override
         protected void doGet( HttpServletRequest request,
                               HttpServletResponse response ) throws ServletException,
                 IOException {
-            response.setContentType("text/plain");
-            response.setStatus(HttpServletResponse.SC_OK);
-            response.getWriter().println("ALIVE");
+            if(isAliveSupplier.getAsBoolean()) {
+                response.setContentType("text/plain");
+                response.setStatus(HttpServletResponse.SC_OK);
+                response.getWriter().println("ALIVE");
+            } else {
+                response.setContentType("text/plain");
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                response.getWriter().println("NOT ALIVE");
+            }
+
         }
     }
 
     static class ReadynessEndpoint extends HttpServlet {
+
+        private BooleanSupplier isReadySupplier;
+
+        ReadynessEndpoint(BooleanSupplier isReadySupplier) {
+            this.isReadySupplier = isReadySupplier;
+        }
         @Override
         protected void doGet( HttpServletRequest request,
                               HttpServletResponse response ) throws ServletException,
                 IOException {
-            response.setContentType("text/plain");
-            response.setStatus(HttpServletResponse.SC_OK);
-            response.getWriter().println("READY");
+            if(isReadySupplier.getAsBoolean()) {
+                response.setContentType("text/plain");
+                response.setStatus(HttpServletResponse.SC_OK);
+                response.getWriter().println("READY");
+            } else {
+                response.setContentType("text/plain");
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                response.getWriter().println("NOT READY");
+            }
         }
     }
 }
