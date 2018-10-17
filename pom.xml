@@ -20,23 +20,24 @@
         <maven.compiler.target>${java.version}</maven.compiler.target>
 
         <maven-compiler-plugin.version>3.7.0</maven-compiler-plugin.version>
+        <jetty.version>9.4.11.v20180605</jetty.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-server</artifactId>
-            <version>9.4.11.v20180605</version>
+            <version>${jetty.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-servlet</artifactId>
-            <version>9.4.7.v20170914</version>
+            <version>${jetty.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-util</artifactId>
-            <version>9.4.7.v20170914</version>
+            <version>${jetty.version}</version>
         </dependency>
 
         <!-- logging -->
