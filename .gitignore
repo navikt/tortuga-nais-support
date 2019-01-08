@@ -1,6 +1,6 @@
 .DS_Store
 .idea
-.java_version
+.java-version
 *.iml
 *.class
 *.jar
