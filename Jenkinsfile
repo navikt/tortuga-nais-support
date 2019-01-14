@@ -32,9 +32,9 @@ node {
             sh "git push --tags https://x-access-token:$appToken@github.com/navikt/tortuga-nais-support HEAD:master"
         }
 
-        github.commitStatus("pending", "navikt/tortuga-nais-support", appToken, commitHash)
+        github.commitStatus("success", "navikt/tortuga-nais-support", appToken, commitHash)
     } catch (err) {
-        github.commitStatus("pending", "navikt/tortuga-nais-support", appToken, commitHash)
+        github.commitStatus("failure", "navikt/tortuga-nais-support", appToken, commitHash)
         throw err
     }
 }
