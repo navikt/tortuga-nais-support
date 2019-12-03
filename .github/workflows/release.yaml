@@ -1,0 +1,51 @@
+name: Release to GitHub Package Registry
+
+on:
+  push:
+    branches: master
+
+jobs:
+  build_and_release:
+    name: Build and release
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout
+      - uses: actions/checkout@v1
+        with:
+          ref: master
+      - uses: actions/cache@preview
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+      - uses: actions/setup-java@v1
+        with:
+          java-version: '11.x'
+
+      # Build
+      - name: Build
+        run: mvn compile
+      - name: Test
+        run: mvn test
+      - name: Package
+        run: mvn package -Dmaven.test.skip
+
+        # Release
+      - name: Create docker tag
+        env:
+          NAME: tortuga-nais-support
+        run: |
+          echo "docker.pkg.github.com"/"$GITHUB_REPOSITORY"/"$NAME" > .docker_image
+          echo "$(git rev-parse --short HEAD)" > .docker_tag
+      - name: Build docker image
+        run: |
+          docker build -t $(cat .docker_image):$(cat .docker_tag) .
+      - name: Login to GitHub Package Registry
+        env:
+          DOCKER_USERNAME: x-access-token
+          DOCKER_PASSWORD: ${{ secrets.GITHUB_ACCESS_TOKEN }}
+        run: |
+          echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin docker.pkg.github.com
+      - name: Push docker image
+        run: "docker push $(cat .docker_image):$(cat .docker_tag)"
