@@ -109,4 +109,12 @@
         </plugins>
     </build>
 
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub navikt Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/navikt/tortuga-nais-support</url>
+        </repository>
+    </distributionManagement>
+
 </project>
