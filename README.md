@@ -27,4 +27,4 @@ Spørsmål knyttet til koden eller prosjektet stilles som issues her på GitHub.
 
 ## For NAV-ansatte
 
-Interne henvendelser kan sendes via Slack i kanalen #peon.
+Interne henvendelser kan sendes via Slack i kanalen #samhandling_pensjonsområdet.
